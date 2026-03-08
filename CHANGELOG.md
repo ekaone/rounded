@@ -5,33 +5,37 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.1.0] - 2026-02-02
-
-### Added
-- Added exported TypeScript types in `src/types.ts`
-
-
-## [1.0.0] - 2026-01-29
+## [1.0.0] - 2026-03-08
 
 ### Added
 - Initial release
-- `maskEmail()` function with customizable options
-- Support for custom mask characters
-- Support for custom visible character count
-- Domain masking feature
-- Viewable mode for conditional masking
-- Full TypeScript support with type definitions
+- `rounded()` default export with `halfUp` and `bankers` rounding methods
+- `rounded.cash()` for physical denomination rounding (nearest 0.05 / 0.10 / 0.25 etc.)
+- `rounded.currency()` for ISO 4217 currency-aware rounding
+- Named exports: `halfUp`, `bankers`, `cash`, `currency`, `CURRENCY_PRECISION`
+- `RoundingMethod`, `RoundedOptions`, `CurrencyRoundingMethod`, `CurrencyOptions`,
+  `CashOptions`, and `CurrencyCode` TypeScript types
+- `src/utils/guard.ts` — null-safety for all public inputs
+- `src/utils/precision.ts` — string-based decimal shift to prevent float drift
+- Full TypeScript support with type definitions in `dist/types`
 - Zero dependencies
-- Dual package support (CommonJS + ESM)
-- Comprehensive documentation
+- Dual package support (CommonJS + ESM) via `tsconfig.esm.json` and `tsconfig.cjs.json`
+- Post-build script `scripts/fix-cjs.mjs` to rename `.js → .cjs` and patch
+  internal `require()` paths
+- Test suite with Vitest covering `halfUp`, `bankers`, `cash`, `currency`,
+  and the main `rounded()` wrapper
 
 ### Features
-- **maskChar**: Customize the masking character (default: `*`)
-- **visibleChars**: Control how many characters remain visible (default: `2`)
-- **maskDomain**: Option to mask domain part of email (default: `false`)
-- **viewable**: Return original email without masking (default: `false`)
+- **`halfUp`**: Standard receipt/POS rounding — ties always round toward +∞
+- **`bankers`**: Round half to even — reduces cumulative bias in high-volume
+  transaction sets
+- **`cash`**: Rounds to nearest physical denomination — configurable via `nearest`
+  option (default `0.05`)
+- **`precision`**: Configurable decimal places on `rounded()`, default `2`
+- **`method`**: Selectable rounding algorithm on `rounded()` and `rounded.currency()`
 
 ### Security
-- Input validation to prevent crashes
-- Handles edge cases (null, undefined, invalid emails)
-- Privacy-focused email masking
+- Input validation via `guard()` — `NaN`, `null`, `undefined`, `Infinity`,
+  and `-Infinity` all return `null`, never throw
+- Float drift prevention via `toPrecision(15)` string-based decimal shifting
+  before any arithmetic — guards against cases like `1.005 * 100 = 100.4999...`
